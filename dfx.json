@@ -1,0 +1,34 @@
+{
+  "canisters": {
+    "bookworm": {
+      "main": "src/bookworm/main.mo",
+      "type": "motoko"
+    },
+    "bookworm_assets": {
+      "dependencies": [
+        "bookworm"
+      ],
+      "frontend": {
+        "entrypoint": "src/bookworm_assets/public/index.js",
+        "output": "canisters/bookworm_assets/assets"
+      },
+      "source": [
+        "src/bookworm_assets/assets"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "output": "canisters/",
+      "packtool": ""
+    },
+    "start": {
+      "address": "127.0.0.1",
+      "port": 8000,
+      "serve_root": "canisters/bookworm_assets/assets"
+    }
+  },
+  "dfx": "0.5.8",
+  "version": 1
+}
