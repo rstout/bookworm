@@ -76,7 +76,7 @@ actor {
   };
 
   // List all published BookIds.
-  public func get_catelog() : async [BookId] {
+  public func get_catalog() : async [BookId] {
     Iter.toArray(
       Iter.map(
         func ((k, v) : (BookId, Book)) : BookId = { k },
@@ -168,22 +168,16 @@ actor {
     }
     else {
       // chapter title is taken from 1st paragraph of content
-      let (t, remaining) = List.split(
-        Iter.toList(Text.toIter(content)),
-        func (char: Char) : Bool { char == '\n' }
-      );
+      let (title_, remaining) = breakLn(content);
       // chapter summary is taken from 2nd paragraph of content
-      let (s, r) = List.split(
-        remaining,
-        func (char: Char) : Bool { char == '\n' }
-      );
+      let (summary_, body_) = breakLn(remaining);
 
       let chapter = {
         summary = {
-          title = charsToText(t);
-          summary = charsToText(s);
+          title = title_;
+          summary = summary_;
         };
-        content = charsToText(r);
+        content = body_;
       };
       let published = Option.unwrapOr(
         Option.map(
@@ -215,15 +209,15 @@ actor {
   };
 
   // For writer to publish a book/chapter.
-  func publish(book_id: BookId, chapter_id: ChapterId)
+  public func publish(book_id: BookId, chapter_id: ChapterId)
   : async Result.Result<(), PublishError> {
-    set_published(book_id, chapter_id, false)
+    set_published(book_id, chapter_id, true)
   };
 
   // For writer to unpublish a book/chapter.
   // (This only hides it from new readers, but not from paid subscribers)
   // For writer to publish a book/chapter.
-  func unpublish(book_id: BookId, chapter_id: ChapterId)
+  public func unpublish(book_id: BookId, chapter_id: ChapterId)
   : async Result.Result<(), PublishError> {
     set_published(book_id, chapter_id, false)
   };
@@ -245,8 +239,37 @@ actor {
     #ok ()
   };
 
-  func charsToText(chars: List.List<Char>) : Text {
-    List.foldLeft<Char, Text>(chars, "", func (c:Char, s: Text) : Text { s # Prim.charToText(c) })
+  func arrayToText(chars: [Char]) : Text {
+    Array.foldl<Char, Text>(
+      func (s: Text, c: Char) : Text { s # Prim.charToText(c) },
+      "",
+      chars
+    )
+  };
+
+  func findIndex<A>(f : A -> Bool, xs : [A]) : ?Nat {
+    for (i in Iter.range(0, xs.len() - 1)) {
+      if (f(xs[i])) {
+        return ?i;
+      }
+    };
+    return null;
+  }; 
+
+  // Find the first line break, and return text before and after it as a tuple.
+  func breakLn(text: Text) : (Text, Text) {
+      let str : [Char] = Iter.toArray(Text.toIter(text));
+      let n = str.len();
+      let i = 0;
+      var pos = 0;
+      switch (findIndex(func (c: Char) : Bool { c == '\n' }, str)) {
+        case null { (text, "") };
+        case (?i) {
+          (arrayToText(Array.tabulate<Char>(i, func (j: Nat) : Char { str[j] })),
+           arrayToText(Array.tabulate<Char>(n - i - 1, func (j: Nat) : Char { str[j + i + 1] }))
+          );
+        };
+      }
   }
 
 };
