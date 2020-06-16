@@ -88,7 +88,7 @@ The core set of data managed by a WriterCanister includes the following (simplif
 // Name of the writer and a short intro.
 Biography = (Name, Bio)
 
-// A colleciton of books is a mapping from BookId to Book.
+// A collection of books is a mapping from BookId to Book.
 Catalog = BookId -> Book
 
 // A book has a title and a collection of chapters which is a mapping from ChapterId to Chapter.
