@@ -20,6 +20,9 @@ Basic functional requirements:
 - We start with post-pay first.
 
 ```
+// Get author's bio.
+get_biography() -> Biography;
+
 // List all published BookIds.
 get_catalog() -> [BookId]
 
@@ -29,8 +32,11 @@ get_book_summary(BookId) -> BookSummary
 // Get the chapter summary of a published chapter.
 get_chapter_summary(BookId, ChapterId) -> ChapterSummary
 
+// Get the list of published ChapterIds.
+get_chapters(BookId) -> Result<[ChapterId], BookNotFoundError>
+
 // Get a published chapter content.
-get_chapter(BookId, ChapterId) -> Result<Chapter, AuthorizationError>
+get_chapter(BookId, ChapterId) -> Result<Chapter, ChapterReadError>
 
 // For reader to subscribe a book.
 subscribe(BookId) -> ()
@@ -42,17 +48,17 @@ unsubscribe(BookId) -> ()
 pay_chapter(BookId, ChapterId) -> Result<(), PaymentError>
 
 // For writer to update a chapter.
-update_chapter(BookId, ChapterId, Text) -> ()
+update_chapter(BookId, ChapterId, Text) -> Result<(), BookNotFoundError>
 
 // For writer to add a new book.
-add_book() -> BookId
+add_book(Title, Summary) -> BookId
 
 // For writer to publish a book/chapter.
-publish(BookId, ChapterId, PaymentScheme);
+publish(BookId, ChapterId, PaymentScheme) -> Result<(), PublishError>;
 
 // For writer to unpublish a book/chapter.
 // (This only hides it from new readers, but not from paid subscribers)
-unpublish(BookId, ChapterId);
+unpublish(BookId, ChapterId) -> Result<(), PublishError>;
 
 // For aggregator to pull new updates.
 get_update_since(Date) -> Updates;
