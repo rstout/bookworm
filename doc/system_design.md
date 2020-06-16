@@ -5,7 +5,7 @@ Each canister is standalone, and provides all services including serving web pag
 
 To allow easy content discovery, there is another content aggregator canister that acts as search engine, and will accept submission and updates from writer canisters. It provides a public interface to serve the reader community at large.
 
-## Canister Iterface
+## Canister Interface
 
 ### `WriterCanister`
 
