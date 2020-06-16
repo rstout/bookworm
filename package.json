@@ -11,5 +11,14 @@
     "terser-webpack-plugin": "2.2.2",
     "webpack": "4.41.3",
     "webpack-cli": "3.3.10"
+  },
+  "dependencies": {
+    "css-loader": "^3.6.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
+    "style-loader": "^1.2.1",
+    "ts-loader": "^7.0.5",
+    "typescript": "^3.9.5"
   }
 }
