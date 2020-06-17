@@ -1,29 +1,27 @@
 # Bookworm
 
-Welcome to your new bookworm project and to the internet computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+Welcome to the Bookworm project and to the internet computer development community.
 
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+We aim to build a decentralized book publishing platform.
 
-To learn more before you start working with bookworm, see the following documentation available online:
+[Business model (Internal Google Doc)](https://docs.google.com/document/d/1IBrPQiPBkt7jFslnJUVR4wOh-g3j55LRJlntRfWBMHY)
 
-- [Quick Start](https://sdk.dfinity.org/developers-guide/quickstart.html)
-- [Developer's Guide](https://sdk.dfinity.org/developers-guide)
-- [Language Reference](https://sdk.dfinity.org/language-guide)
+[Draft of system design](./doc/system_design.md)
 
-If you want to start working on your project right away, you might want to try the following commands:
+To run unit tests locally:
 
-```bash
-cd bookworm/
-dfx help
-dfx config --help
-```
-
-## Test
-
-To test the program locally:
 ```
 cd bookworm/
 ./run.sh setup
 ./run.sh tests
 dfx stop
+```
+
+Example of uploading a chapter (as a writer):
+
+```
+cd bookworm/
+./two_cities.sh setup
+./two_cities.sh upload
+# there is no need to dfx stop, because the above crashes the system!
 ```
