@@ -4,10 +4,6 @@ Welcome to the Bookworm project and to the internet computer development communi
 
 We aim to build a decentralized book publishing platform.
 
-[Business model (internal link)](https://docs.google.com/document/d/1IBrPQiPBkt7jFslnJUVR4wOh-g3j55LRJlntRfWBMHY)
-
-[UI design and slides (internal link)](https://docs.google.com/presentation/d/1n0FY3-A5Sr3Pl82i37WQLSVBDaw3Oi0ydPbc1H1s1Kk)
-
 [Draft of system design](./docs/system_design.md)
 
 To run unit tests locally:
