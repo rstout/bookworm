@@ -21,7 +21,7 @@ Example of uploading a chapter (as a writer):
 cd bookworm/
 ./two_cities.sh setup
 ./two_cities.sh upload
-# there is no need to dfx stop, because the above crashes the system!
+dfx stop
 ```
 
 Frontend UI is still WIP.

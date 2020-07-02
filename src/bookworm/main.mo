@@ -67,7 +67,7 @@ actor {
   // The database that holds all books.
   var catalog: Catalog = TrieMap.TrieMap<BookId, Book>(
     func(x:Nat, y:Nat) : Bool { x == y },
-    Hash.hashOfInt
+    Hash.hash
   );
 
   // Get author's biography.
@@ -79,26 +79,26 @@ actor {
   public func get_catalog() : async [BookId] {
     Iter.toArray(
       Iter.map(
-        func ((k, v) : (BookId, Book)) : BookId = { k },
-        catalog.iter()
+        catalog.entries(),
+        func ((k, v) : (BookId, Book)) : BookId = { k }
       )
     )
   };
 
   // Get the book summary of a published book.
   public func get_book_summary(book_id: BookId) : async ?BookSummary {
-    Option.map(func (book: Book) : BookSummary { book.summary }, catalog.get(book_id))
+    Option.map(catalog.get(book_id), func (book: Book) : BookSummary { book.summary })
   };
 
   // Get the chapter summary of a published chapter.
   public func get_chapter_summary(book_id: BookId, chapter_id: ChapterId)
   : async ?ChapterSummary {
-    Option.bind(
+    Option.chain(
       catalog.get(book_id), 
       func (book: Book) : ?ChapterSummary {
         Option.map(
-          func ((chapter: Chapter, _: Bool)) : ChapterSummary { chapter.summary },
-          book.chapters.get(chapter_id)
+          book.chapters.get(chapter_id),
+          func ((chapter: Chapter, _: Bool)) : ChapterSummary { chapter.summary }
         )
       }
     )
@@ -108,16 +108,16 @@ actor {
   public func get_chapters(book_id: BookId) : async Result.Result<[ChapterId], BookNotFoundError> {
     Result.fromOption<[ChapterId], BookNotFoundError>(
       Option.map(
+        catalog.get(book_id), 
         func (book: Book) : [ChapterId] {
           Array.map(
-            func ((chapter_id: ChapterId, _: (Chapter, Bool))) : ChapterId { chapter_id },
             Array.filter(
               func ((_: ChapterId, (_: Chapter, published: Bool))) : Bool { published },
-              Iter.toArray(book.chapters.iter())
-            )
+              Iter.toArray(book.chapters.entries())
+            ),
+            func ((chapter_id: ChapterId, _: (Chapter, Bool))) : ChapterId { chapter_id }
           )
-        },
-        catalog.get(book_id), 
+        }
       ),
       #BookNotFound
     )
@@ -127,10 +127,10 @@ actor {
   public func get_chapter(book_id: BookId, chapter_id: ChapterId)
   : async Result.Result<Chapter, ChapterReadError> {
     Result.fromOption<Chapter, ChapterReadError>(
-      Option.bind(
+      Option.chain(
         catalog.get(book_id), 
         func (book: Book) : ?Chapter {
-          Option.bind(
+          Option.chain(
             book.chapters.get(chapter_id),
             func ((chapter: Chapter, published: Bool)) : ?Chapter {
               if (published) { ?chapter } else { null }
@@ -164,7 +164,7 @@ actor {
 
     // Delete the chapter if content is empty
     if (content == "") {
-      let _ = book.chapters.del(chapter_id);
+      let _ = book.chapters.delete(chapter_id);
     }
     else {
       // chapter title is taken from 1st paragraph of content
@@ -179,21 +179,21 @@ actor {
         };
         content = body_;
       };
-      let published = Option.unwrapOr(
+      let published = Option.get(
         Option.map(
+          book.chapters.get(chapter_id),
           func ((_: Chapter, published_: Bool)) : Bool { published_ },
-          book.chapters.get(chapter_id)
         ),
         false
       );
-      let _ = book.chapters.set(chapter_id, (chapter, published));
+      let _ = book.chapters.put(chapter_id, (chapter, published));
     };
     #ok ()
   };
 
   // For writer to add a new book.
   public func add_book(title_: Text, summary_: Text) : async BookId {
-    let book_id : BookId = catalog.count();
+    let book_id : BookId = catalog.size();
     let book : Book = {
       summary = {
         title = title_;
@@ -201,10 +201,10 @@ actor {
       };
       chapters = TrieMap.TrieMap<ChapterId, (Chapter, Bool)>(
         func(x:Text, y:Text) : Bool { x == y },
-        Hash.hashOfText
+        Text.hash // We need a better hash function
       );
     };
-    let _ = catalog.set(book_id, book);
+    let _ = catalog.put(book_id, book);
     book_id
   };
 
@@ -235,20 +235,20 @@ actor {
       return (#err (#ChapterNotFound));
     };
     let (chapter, _) = Option.unwrap(chapter_);
-    let _ = book.chapters.set(chapter_id, (chapter, published));
+    let _ = book.chapters.put(chapter_id, (chapter, published));
     #ok ()
   };
 
   func arrayToText(chars: [Char]) : Text {
-    Array.foldl<Char, Text>(
-      func (s: Text, c: Char) : Text { s # Prim.charToText(c) },
+    Array.foldLeft<Char, Text>(
+      chars,
       "",
-      chars
+      func (s: Text, c: Char) : Text { s # Prim.charToText(c) },
     )
   };
 
   func findIndex<A>(f : A -> Bool, xs : [A]) : ?Nat {
-    for (i in Iter.range(0, xs.len() - 1)) {
+    for (i in Iter.range(0, xs.size() - 1)) {
       if (f(xs[i])) {
         return ?i;
       }
@@ -259,7 +259,7 @@ actor {
   // Find the first line break, and return text before and after it as a tuple.
   func breakLn(text: Text) : (Text, Text) {
       let str : [Char] = Iter.toArray(Text.toIter(text));
-      let n = str.len();
+      let n = str.size();
       let i = 0;
       var pos = 0;
       switch (findIndex(func (c: Char) : Bool { c == '\n' }, str)) {
